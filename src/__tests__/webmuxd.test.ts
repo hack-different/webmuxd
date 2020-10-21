@@ -1,5 +1,5 @@
-import MobileDevice from '../webmuxd'
+import MobileDevice from '../webmuxd';
 
 test('Module defined', () => {
-    expect(MobileDevice).toBeDefined()
+  expect(MobileDevice).toBeDefined();
 });
