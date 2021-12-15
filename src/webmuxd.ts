@@ -167,7 +167,12 @@ export default class MobileDevice {
         this.deviceReader();
       }, 1000);
     } catch (e) {
-      MobileDevice.logger.log("error", e);
+      if (typeof e === 'string') {
+        MobileDevice.logger.log("error", e);
+      }
+      else if (e instanceof Error) {
+        MobileDevice.logger.log("error", e.message)
+      }
     }
   }
 
