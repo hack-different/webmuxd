@@ -1,0 +1,96 @@
+syntax = "proto3";
+option go_package = ".;main";
+
+// Direction is from Client to Server
+message DeviceInfoUpdate {
+  enum BusSpeed {
+    UNKNOWN_SPEED = 0;
+    LOW = 1;
+    FULL = 2;
+    HIGH = 3;
+    SUPER = 4;
+  }
+
+  enum DeviceEvent {
+    UNKNOWN_EVENT = 0;
+    CONNECTED = 1;
+    DISCONNECTED = 2;
+  }
+
+  uint32 index = 1;
+  DeviceEvent event = 2;
+  string serialNumber = 3;
+  uint32 vendorId = 4;
+  uint32 productId = 5;
+  uint32 versionMajor = 6;
+  uint32 versionMinor = 7;
+  optional BusSpeed speed = 8;
+}
+
+message CloseDevice {
+  uint32 deviceIndex = 1;
+}
+
+message CloseConnection {
+  uint32 deviceIndex = 1;
+  uint64 connectionTag = 2;
+}
+
+message OpenConnection {
+  uint32 deviceIndex = 1;
+  uint64 connectionTag = 2;
+  uint32 destinationPort = 3;
+  optional uint32 sourcePort = 4;
+}
+
+message ConnectionStatusUpdate {
+  enum State {
+    UNKNOWN_STATE = 0;
+    CONNECTING = 1;
+    CONNECTED = 2;
+    REFUSED = 3;
+    DYING = 4;
+    DEAD = 5;
+  }
+
+  uint32 deviceIndex = 1;
+  uint64 connectionTag = 2;
+  State state = 3;
+  uint32 sourcePort = 4;
+  optional string message = 5;
+}
+
+message DeviceError {
+  uint32 deviceIndex = 1;
+  string message = 3;
+}
+
+message ConnectionSendToDevice {
+  uint32 deviceIndex = 1;
+  uint64 connectionTag = 2;
+  bytes data = 3;
+}
+
+message ConnectionReceiveFromDevice {
+  uint32 deviceIndex = 1;
+  uint64 connectionTag = 2;
+  bytes data;
+}
+
+message MessageMT {
+  oneof message {
+    CloseDevice closeDevice = 1;
+    OpenConnection openConnection = 2;
+    ConnectionSendToDevice fromDevice = 3;
+    CloseConnection closeConnection = 4;
+  }
+}
+
+message MessageMO {
+  oneof message {
+    DeviceError error = 1;
+    DeviceInfoUpdate deviceInfo = 2;
+    ConnectionStatusUpdate connectionUpdate = 3;
+    ConnectionReceiveFromDevice toDevice = 4;
+  }
+}
