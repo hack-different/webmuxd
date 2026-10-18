@@ -1,0 +1,98 @@
+syntax = "proto3";
+option go_package = ".;main";
+
+// WebSocket protocol between a browser holding the USB device (webmuxd) and a relay server (go-webmuxd).
+//
+// ServerMessage travels browser -> server, ClientMessage travels server -> browser.
+//
+// Two modes share this schema, chosen per device by DeviceConnected.muxInClient:
+//
+// * raw (muxInClient = false): the server speaks usbmux. The browser relays complete mux packets in
+//   DataFromDevice and writes DataToDevice payloads to the device unchanged. This is the original protocol and
+//   the field numbers below are unchanged from it.
+// * mux (muxInClient = true): the browser speaks usbmux, including all framing and TCP ACKs. The server opens
+//   channels to device ports with OpenChannel and exchanges stream bytes with ChannelData, so no USB round trip
+//   has to cross the WebSocket.
+
+message DeviceConnected {
+  string serialNumber = 1;
+  int32 vendorId = 2;
+  int32 productId = 3;
+  string productName = 4;
+  bool muxInClient = 5;
+}
+
+message DeviceDisconnected {
+  string serialNumber = 1;
+}
+
+// raw mode: one or more complete usbmux packets read from the device.
+message DataFromDevice {
+  string serialNumber = 1;
+  bytes data = 2;
+}
+
+message DataToDeviceResult {
+  string correlationId = 1;
+  bool success = 2;
+}
+
+// raw mode: bytes to write to the device's bulk OUT endpoint.
+message DataToDevice {
+  string serialNumber = 1;
+  string correlationId = 2;
+  bytes data = 3;
+}
+
+enum ChannelState {
+  CHANNEL_STATE_UNKNOWN = 0;
+  CHANNEL_STATE_CONNECTED = 1;
+  CHANNEL_STATE_REFUSED = 2;
+  CHANNEL_STATE_CLOSED = 3;
+}
+
+// mux mode: ask the browser to connect to a TCP port on the device. channelId is chosen by the server.
+message OpenChannel {
+  string serialNumber = 1;
+  uint32 channelId = 2;
+  uint32 port = 3;
+}
+
+message CloseChannel {
+  string serialNumber = 1;
+  uint32 channelId = 2;
+}
+
+message ChannelStateChanged {
+  string serialNumber = 1;
+  uint32 channelId = 2;
+  ChannelState state = 3;
+  string reason = 4;
+}
+
+// mux mode: stream bytes on an open channel, in either direction.
+message ChannelData {
+  string serialNumber = 1;
+  uint32 channelId = 2;
+  bytes data = 3;
+}
+
+message ServerMessage {
+  oneof message {
+    DeviceConnected deviceConnected = 1;
+    DataFromDevice fromDevice = 2;
+    DataToDeviceResult toDeviceResult = 3;
+    DeviceDisconnected deviceDisconnected = 4;
+    ChannelStateChanged channelState = 5;
+    ChannelData channelData = 6;
+  }
+}
+
+message ClientMessage {
+  oneof message {
+    DataToDevice toDevice = 1;
+    OpenChannel openChannel = 2;
+    ChannelData channelData = 3;
+    CloseChannel closeChannel = 4;
+  }
+}
