@@ -1,11 +1,26 @@
 {
   "compilerOptions": {
-    "target": "es2018",
+    "target": "es2020",
+    "lib": [
+      "es2020",
+      "dom"
+    ],
     "module": "commonjs",
     "declaration": true,
+    "rootDir": "./src",
     "outDir": "./lib",
-    "strict": true
+    "strict": true,
+    "esModuleInterop": true,
+    "types": [
+      "w3c-web-usb"
+    ],
+    "skipLibCheck": true
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "**/__tests__/*"]
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/__tests__/**"
+  ]
 }

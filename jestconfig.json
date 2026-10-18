@@ -1,7 +1,29 @@
 {
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+  "roots": [
+    "<rootDir>/src"
+  ],
+  "testRegex": "/__tests__/.*\\.test\\.ts$",
   "transform": {
-    "^.+\\.(t|j)sx?$": "ts-jest"
-  },
-  "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-  "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"]
+    "^.+\\.ts$": [
+      "ts-jest",
+      {
+        "tsconfig": {
+          "types": [
+            "jest",
+            "node",
+            "w3c-web-usb"
+          ],
+          "lib": [
+            "es2020",
+            "dom"
+          ],
+          "esModuleInterop": true,
+          "skipLibCheck": true,
+          "strict": true
+        }
+      }
+    ]
+  }
 }
